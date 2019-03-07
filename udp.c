@@ -1657,7 +1657,7 @@ _forward(void *data)
 	
 	
 	if(_debug == LDEBUG)
-		printf("Forwardig.....\n");
+		printf("Forwarding.....\n");
 	
 	lh = (struct lisp_control_hdr *)CO(packet, 0);
 	/* Encapsulated Control Message Format => decap first */
@@ -1713,19 +1713,38 @@ _forward(void *data)
 #endif
 
 	if(_debug == LDEBUG)
-		fprintf(OUTPUT_STREAM, "Sending packet...");                                                                                                                      
-	if((s = socket (PF_INET, SOCK_RAW, IPPROTO_IP)) < 0){
+		fprintf(OUTPUT_STREAM, "Sending packet...");
+
+	int socket_domain, socket_protocol, socket_level;
+	if((si_other->sa).sa_family == AF_INET) {
+		socket_domain = AF_INET;
+		socket_protocol = IPPROTO_IPIP;
+		socket_level = IPPROTO_IP;
+	} else {
+		socket_domain = AF_INET6;
+		socket_protocol = IPPROTO_IPV6;
+		socket_level = IPPROTO_IPV6;
+	}
+	// Note: This RAW socket requires e.g. root privileges:
+	if((s = socket (socket_domain, SOCK_RAW, socket_protocol)) < 0){
 		perror("socket");
 		return (FALSE);
 	}
 
 	one = 1;
-	if (setsockopt (s, IPPROTO_IP, IP_HDRINCL, &one, sizeof (one)) < 0){
+	if (setsockopt (s, socket_level, IP_HDRINCL, &one, sizeof (one)) < 0){
 		perror("setsockopt");
 		close(s);
 		return (FALSE);
 	}
-	if(sendto(s,(void *)ih, (ih->ip_len), 0, (struct sockaddr *)&sin, sizeof (struct sockaddr)) < 0){
+	ssize_t sendto_result;
+	if((si_other->sa).sa_family == AF_INET) {
+		sendto_result = sendto(s,(void *)ih, (ih->ip_len), 0, (struct sockaddr *)&sin, sizeof (struct sockaddr));
+	} else {
+		sendto_result = sendto(s,(void *)ih6, (ih6->ip6_plen), 0, (struct sockaddr *)&sin, sizeof (struct sockaddr));
+	}
+	if(sendto_result < 0){
+		// TODO: This does not work for IPv6 yet (EINVAL)
 		perror("sendto");
 		close(s);
 		return (FALSE);
