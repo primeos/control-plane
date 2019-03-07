@@ -1670,7 +1670,6 @@ _forward(void *data)
 	
 	ih = (struct ip *)CO(lh, sizeof(struct lisp_control_hdr));
 	if (ih->ip_v == 4){
-		ih = (struct ip *)CO(lh, sizeof(struct lisp_control_hdr));
 		ih6	= NULL;
 		udp = (struct udphdr *)CO(ih, sizeof(struct ip));
 	}
@@ -1687,7 +1686,6 @@ _forward(void *data)
 			return (0);
 		}
 	}	
-	udp = (struct udphdr *)CO(ih, sizeof(struct ip));
 	lcm = (struct map_request_hdr *)CO(udp, sizeof(struct udphdr));
 
 	if(lcm->lisp_type != LISP_TYPE_MAP_REQUEST){
@@ -1701,13 +1699,13 @@ _forward(void *data)
 	if( (si_other->sa).sa_family == AF_INET){
 		sin.sin.sin_family = (si_other->sin).sin_family;
 		sin.sin.sin_port = (si_other->sin).sin_port;
+		ih->ip_len = ntohs(ih->ip_len);
+		ih->ip_sum = 0;
 	}else{
 		sin.sin6.sin6_family = (si_other->sin6).sin6_family;
 		sin.sin6.sin6_port = (si_other->sin6).sin6_port ;
+		ih6->ip6_plen = ntohs(ih6->ip6_plen);
 	}
-
-	ih->ip_len = ntohs(ih->ip_len);
-	ih->ip_sum = 0; 
 #ifdef BSD
 	udp->uh_sum = 0;
 #else
