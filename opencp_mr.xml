@@ -1,0 +1,13 @@
+<db>
+	<geid>
+		<arrange>192.168.0.0/24</arrange>
+	</geid>
+	<eid prefix="192.168.0.0/24" a="true" referral="true" incomplete="false">
+		<rloc>
+			<address>10.0.0.1</address>
+			<priority>1</priority>
+			<weight>100</weight>
+			<reachable>true</reachable>
+		</rloc>
+	</eid>
+</db>

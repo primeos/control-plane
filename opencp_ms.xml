@@ -1,0 +1,15 @@
+<db>
+	<geid>
+		<arrange>192.168.0.0/24</arrange>
+	</geid>
+	<site>
+		<name>lisp1</name>
+		<key>lisp1-pw</key>
+		<contact>baz@foo.bar</contact>
+		<active>yes</active>
+		<eid>
+			<addr family="IPv4">192.168.0.0/24</addr>
+			<active>yes</active>
+		</eid>
+	</site>
+</db>
